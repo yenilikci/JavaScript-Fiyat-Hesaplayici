@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <meta name="author" content="https://github.com/yenilikci">
+    <meta name="url" content="https://github.com/yenilikci/JavaScript-Fiyat-Hesaplayici">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" />
+
+
+
+    <title>Fiyat Hesaplayıcı</title>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a href="#" class="navbar-brand">
+                Fiyat Hesaplayıcı
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <form>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <input type="text" id="name" class="form-control" placeholder="İsim (Name)">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <input type="text" id="price" class="form-control" placeholder="Fiyat (Price)">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> Ekle (Add)
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="far fa-edit"></i> Değişiklikleri Kaydet (Save Changes)
+                    </button>
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-times"></i> Sil (Delete)
+                    </button>
+                    <button type="submit" class="btn btn-warning text-white btn-sm">
+                        <i class="fas fa-arrow-circle-left"></i> İptal (Cancel)
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <table class="table">
+                <tbody id="item-list">
+                    <tr>
+                        <td>1</td>
+                        <td>Monitor</td>
+                        <td>300 $</td>
+                        <td class="text-right">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="far fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-footer text-right">
+                <p>Toplam (TL) <strong>300 TL</strong></p>
+                <p>Total ($) <strong>38 $</strong></p>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script src="app/app.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
