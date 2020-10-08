@@ -29,6 +29,17 @@ const ProductController = (function () {
         getData: function () {
             return data; //data nesnesini geri döndürür
         },
+        getProductById: function(id){ //gelen id bilgisine göre ürün getirecek
+            let product = null;
+
+            data.products.forEach(prd => {
+                if(prd.id == id) //eğer ürünler listesindeki bir ürünün id'si parametre olarak gelen id'ye eşit ise
+                {
+                    product = prd; //o ürünü product değişkenine atayalım
+                }
+            });
+            return product; //en son ürünü geri döndürelim
+        },
         addProduct: function (name, price) {
             let id;
             if (data.products.length > 0) //eğer data objesi içerisindeki productların uzunluğu > 0 ise eleman vardır
@@ -82,9 +93,7 @@ const UIController = (function () {
                     <td>${prd.name}</td>
                     <td>${prd.price} $</td>
                     <td class="text-right">
-                        <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="far fa-edit"></i>
-                        </button>
+                            <i class="far fa-edit edit-product"></i>
                     </td>
                 </tr>`
             });
@@ -103,9 +112,7 @@ const UIController = (function () {
                 <td>${prd.name}</td>
                 <td>${prd.price} $</td>
                 <td class="text-right">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="far fa-edit"></i>
-                    </button>
+                        <i class="far fa-edit edit-product"></i>
                 </td>
             </tr>
             `;
@@ -125,7 +132,7 @@ const UIController = (function () {
             //currenctlayer'ın apisi ile USD - TRY dönüşümü yaptım
                 document.querySelector(Selectors.totalDolar).textContent = total;
                 const api = "http://api.currencylayer.com/live?access_key=ce956947a9b5815ebe3419f952d9c909";
-                fetch(api).then(res => res.json())
+                fetch(api).then(res => res.json()) //fetch api kullanıyorum
                 .then(data => {
                     const rate = data.quotes['USDTRY'];
                     document.querySelector(Selectors.totalTL).textContent = rate*total; //TL karşılığı ile toplamı çarpıp TL toplamında gösterdim
@@ -145,6 +152,9 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
         const loadEventListeners = function () {
             //ürün ekleme eventi
             document.querySelector(UISelectors.addButton).addEventListener('click', productAddSubmit); //UISelectors üzerinden addButton'ı çağıralım ve 'click' eventi ekleyelim
+        
+            //ürünü düzenle
+            document.querySelector(UISelectors.productList).addEventListener('click',productEditSubmit); //UISelectors üzerinden productList'i çağıralım ve 'click' eventi ekleyelim
         }
 
         //addButton'a tıklandığında çalışacak fonksiyon
@@ -169,6 +179,20 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
 
 
             e.preventDefault();
+        }
+
+        //productList'e tıklandığında çalışacak fonksiyon
+        const productEditSubmit = function(e){
+            //eğer gelen event parametresinin target özelliğinin classList'i içerisinde edit-product elemanı varsa
+            if(e.target.classList.contains('edit-product')){
+                //artık ikona tıklandığında işlemlerim gerçekleşecek
+                const id =  e.target.parentNode.previousElementSibling.previousElementSibling.previousElementSibling.textContent; //ürünün id bilgisini aldık
+          
+               const product =  ProductCtrl.getProductById(id); //göndereceğimiz id bilgisi ile ürün bilgisini getirsin
+            
+                console.log(product);
+            }
+            e.preventDefault(); //submit olayını durduralım
         }
 
 
