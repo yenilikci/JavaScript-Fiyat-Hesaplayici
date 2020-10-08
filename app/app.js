@@ -40,6 +40,37 @@ const ProductController = (function(){
 // UI Controller Modülü
 const UIController = (function(){
 
+    const Selectors = {
+        productList : "#item-list" //item-list id'li tbody etiketi seçilsin diye seçici nesnesinin bir propertysi
+    }
+
+    //public
+    return{
+        createProductList : function(products){
+            let html = '';
+
+            //ürünler dizisindeki her bir ürünü , html içerisindeki ürünler tablosuna ekleyelim
+            products.forEach(prd => {
+                html += `
+                <tr>
+                    <td>${prd.id}</td> 
+                    <td>${prd.name}</td>
+                    <td>${prd.price} $</td>
+                    <td class="text-right">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="far fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>`
+            });
+
+            document.querySelector(Selectors.productList).innerHTML = html; //html bilgilerini item-list id'li tbody'ye aktaracağız
+        },
+        getSelectors : function(){
+            return Selectors;
+        }
+    }
+
 })();
 
 // App Modülü
@@ -49,7 +80,7 @@ const App = (function(ProductCtrl,UICtrl) //beklenen parametreler
         init : function(){
             console.log('uygulama başlatılıyor...');
             const products = ProductCtrl.getProducts(); //ürünleri getirdim
-            UICtrl.createProductList(products); //UICtrl üzerinde oluşturulacak createProductList metodu bizden ürün bilgilerini alıp index içerisindeki ürün tablosuna yerleştirecek
+            UICtrl.createProductList(products); //UICtrl üzerinde oluşturulan createProductList metodu bizden ürün bilgilerini alıp index içerisindeki ürün tablosuna yerleştirecek
         } 
     }
 })(ProductController,UIController); //parametre değerleri
