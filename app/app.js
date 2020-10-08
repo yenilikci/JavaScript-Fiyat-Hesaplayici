@@ -81,6 +81,9 @@ const UIController = (function () {
     const Selectors = {
         productList: "#item-list", //item-list id'li tbody etiketi seçilsin diye seçici nesnesinin bir propertysi
         addButton: '#addBtn',
+        updateButton: '#updateBtn',
+        cancelButton: '#cancelBtn',
+        deleteButton: '#deleteBtn',
         productName: '#productName',
         productPrice: '#productPrice',
         productCard: '#productCard',
@@ -151,6 +154,33 @@ const UIController = (function () {
             document.querySelector(Selectors.productName).value = selectedProduct.name; //ürün isminin geldiği inputa seçili ürün ismini yerleştirdik
             document.querySelector(Selectors.productPrice).value = selectedProduct.price; //ürün fiyatının geldiği inputa seçili ürün fiyatını yerleştirdik
 
+        },
+        addingState: function(){
+            //ekleme durumu
+            UIController.clearInputs();
+            document.querySelector(Selectors.addButton).style.display = 'inline'; //ekleme butonu görünür halde
+            //diğer butonlar gizlendi
+            document.querySelector(Selectors.updateButton).style.display = 'none';
+            document.querySelector(Selectors.deleteButton).style.display = 'none';
+            document.querySelector(Selectors.cancelButton).style.display = 'none';
+        },
+        editState: function(tr){ 
+            const parent = tr.parentNode;
+            for(let i = 0; i < parent.children.length; i++)
+            {
+                //seçilmesi gereken tr dışındaki tüm satırların bg-warning class'ını siliyorum
+                parent.children[i].classList.remove('bg-warning');
+            }
+
+            //seçmiş olduğum elemanı içeren tr elemanı
+            tr.classList.add('bg-warning');
+            //düzenleme durumu
+            document.querySelector(Selectors.addButton).style.display = 'none'; //ekleme butonu gizlenmiş halde
+            //diğer butonlar ise görünür halde
+            document.querySelector(Selectors.updateButton).style.display = 'inline'; 
+            document.querySelector(Selectors.deleteButton).style.display = 'inline'; 
+            document.querySelector(Selectors.cancelButton).style.display = 'inline'; 
+
         }
     }
 
@@ -207,8 +237,12 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
                 //seçilen ürünü düzenle
                 ProductCtrl.setCurrentProduct(product);
 
-                //UI
+                //UI'da Ürün Ekleme Özelliği
                 UICtrl.addProductToForm();
+
+                //ürün düzenlemeye geçildiğinde durum düzenleme durumuna geçsin
+                UICtrl.editState(e.target.parentNode.parentNode); //böylece tr elemanına ulaştım
+
 
             }
             e.preventDefault(); //submit olayını durduralım
@@ -218,6 +252,9 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
         return {
             init: function () {
                 console.log('uygulama başlatılıyor...');
+
+                UICtrl.addingState(); //uygulama başlatıldığında ekleme durumunda başlatılsın
+
                 const products = ProductCtrl.getProducts(); //ürünleri getirdim
 
                 if (products.length === 0) // eğer gelen ürünlerin uzunluğu === 0 ise bize gelen bir eleman yok liste boş 
