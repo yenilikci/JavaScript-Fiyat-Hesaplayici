@@ -43,6 +43,14 @@ const ProductController = (function () {
             const newProduct = new Product(id, name, parseFloat(price)); //Product kurucusu üzerinden yeni bir obje oluşturalım id,isim ve fiyat bilgisini gönderelim
             data.products.push(newProduct); //data objesi içerisindeki ürünler dizisine yeni bir ürün nesnesi daha ekledim
             return newProduct; //eklenen ürünü geri döndürür
+        },
+        getTotal: function(){
+            let total = 0; //toplam başlangıçta sıfır
+            data.products.forEach(item => {
+                total += item.price; //her elemanın fiyat bilgisini toplama ekliyoruz
+            });
+            data.totalPrice = total;
+            return data.totalPrice; //toplamı geriye döndür
         }
     }
 
@@ -56,7 +64,9 @@ const UIController = (function () {
         addButton: '#addBtn',
         productName: '#productName',
         productPrice: '#productPrice',
-        productCard: '#productCard'
+        productCard: '#productCard',
+        totalTL: '#total-tl',
+        totalDolar: '#total-dolar'
     }
 
     //public
@@ -110,6 +120,16 @@ const UIController = (function () {
         //ürünler kartı içerisinde ürün yoksa gizleyeceğiz
         hideCard: function () {
             document.querySelector(Selectors.productCard).style.display = 'none';
+        },
+        showTotal: function(total){
+            //currenctlayer'ın apisi ile USD - TRY dönüşümü yaptım
+                document.querySelector(Selectors.totalDolar).textContent = total;
+                const api = "http://api.currencylayer.com/live?access_key=ce956947a9b5815ebe3419f952d9c909";
+                fetch(api).then(res => res.json())
+                .then(data => {
+                    const rate = data.quotes['USDTRY'];
+                    document.querySelector(Selectors.totalTL).textContent = rate*total; //TL karşılığı ile toplamı çarpıp TL toplamında gösterdim
+                })
         }
     }
 
@@ -137,6 +157,13 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
                 const newProduct = ProductCtrl.addProduct(productName, productPrice); //ProductController üzerinden addProduct methodu ile isim ve fiyat bilgisi parametreleri ile ekleme yapılır bize ürün bilgisi geri döner onu da alırız
                 //ürünün listeye eklenmesi (html içerisine)
                 UICtrl.addProduct(newProduct);
+
+                //toplamı getir
+                const total = ProductCtrl.getTotal();
+
+                //toplamı göster
+                UICtrl.showTotal(total);
+
                 UICtrl.clearInputs(); //ürün ekleme işlemi bittikten sonra inputları temizleyelim
             }
 
