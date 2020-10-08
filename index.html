@@ -36,14 +36,14 @@
                 <form>
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <input type="text" id="name" class="form-control" placeholder="İsim (Name)">
+                            <input type="text" id="productName" class="form-control" placeholder="İsim (Name)">
                         </div>
                         <div class="form-group col-md-6">
-                            <input type="text" id="price" class="form-control" placeholder="Fiyat (Price)">
+                            <input type="text" id="productPrice" class="form-control" placeholder="Fiyat (Price)">
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-success btn-sm">
+                    <button type="submit" class="btn btn-success btn-sm" id="addBtn">
                         <i class="fas fa-plus"></i> Ekle (Add)
                     </button>
                     <button type="submit" class="btn btn-primary btn-sm">
@@ -59,7 +59,7 @@
             </div>
         </div>
 
-        <div class="card mt-3">
+        <div  id="productCard"  class="card mt-3">
             <table class="table">
                 <tbody id="item-list">
                 </tbody>
