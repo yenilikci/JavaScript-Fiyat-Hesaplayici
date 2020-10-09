@@ -16,17 +16,37 @@ const StorageControler = (function () {
             localStorage.setItem('products', JSON.stringify(products)); //ürünler listesini local storage'a products anahtarı ile string bir ifadeye çevirerek kaydediyoruz
         },
         //ürün bilgilerinin local storage'dan getirilmesi
-        getProducts: function(){
+        getProducts: function () {
             let products;
-            if(localStorage.getItem('products') == null)
-            {
+            if (localStorage.getItem('products') == null) {
                 //eğer local storage'da products isimli tanımlı bir alan yoksa
                 products = [];
-            }else{ //eğer bir bilgi varsa
+            } else { //eğer bir bilgi varsa
                 products = JSON.parse(localStorage.getItem('products')); //products alanından bilgileri getir
             }
 
             return products; //okunan ürün listesini geri döndür (products isimli tanımlı alandaki)
+        },
+        //ürün bilgilerini local storage'da güncelle
+        updateProduct: function (product) {
+            let products = JSON.parse(localStorage.getItem('products'));
+            //aradığımız ürün ile ürünler listesindeki ürün eşleşirse
+            products.forEach(function (prd, index) {
+                if (prd.id === product.id) {
+                    products.splice(index, 1, product); //indexten itibaren bir elemanı siler yerine gönderdiğimiz ürünü ekler
+                }
+            });
+            localStorage.setItem('products', JSON.stringify(products)); //güncellenmiş hali ile tekrar local storage'a kaydediyoruz
+        },
+        deleteProduct: function(id){
+            let products = JSON.parse(localStorage.getItem('products'));
+            //aradığımız ürün ile ürünler listesindeki ürün eşleşirse
+            products.forEach(function (prd, index) {
+                if (prd.id === id) {
+                    products.splice(index, 1); 
+                }
+            });
+            localStorage.setItem('products', JSON.stringify(products)); //güncellenmiş hali ile tekrar local storage'a kaydediyoruz
         }
     }
 
@@ -371,6 +391,9 @@ const App = (function (ProductCtrl, UICtrl, StorageCtrl) //beklenen parametreler
                 //toplamı göster
                 UICtrl.showTotal(total);
 
+                //local storage'ı güncelle
+                StorageCtrl.updateProduct(updatedProduct);
+
                 UICtrl.addingState();
             }
             e.preventDefault();
@@ -403,6 +426,9 @@ const App = (function (ProductCtrl, UICtrl, StorageCtrl) //beklenen parametreler
             //toplamı göster
             UICtrl.showTotal(total);
 
+            //local storage'den ürünü silmek
+            StorageCtrl.deleteProduct(selectedProduct.id);
+
             //ekleme durumuna geri döndür
             UICtrl.addingState();
 
@@ -430,6 +456,11 @@ const App = (function (ProductCtrl, UICtrl, StorageCtrl) //beklenen parametreler
                     UICtrl.createProductList(products); //UICtrl üzerinde oluşturulan createProductList metodu bizden ürün bilgilerini alıp index içerisindeki ürün tablosuna yerleştirecek
                     //event listenerları yükle
                 }
+                //toplamı getir
+                const total = ProductCtrl.getTotal();
+
+                //toplamı göster
+                UICtrl.showTotal(total);
                 loadEventListeners();
             }
         }
