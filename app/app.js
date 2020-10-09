@@ -1,6 +1,35 @@
 // Storage Controller Modülü
 const StorageControler = (function () {
 
+    return {
+        //ürünün local storage'a kaydedilmesi
+        storeProduct: function (product) {
+            let products;
+            //eğer storage içerisinde daha önce products isimli bir alan oluşturulmamış ise
+            if (localStorage.getItem('products') === null) {
+                products = []; //ürünler listesinin oluşturalım
+                products.push(product); //gelen ürün objesini bu ürünler listesine ekleyelim
+            } else { //products isimli daha önce tanımlanmış bir alan var 
+                products = JSON.parse(localStorage.getItem('products')); //stringi json objesine çevirelim (parse ile)
+                products.push(product); //ki push methodu ile üzerine yeni ürün bilgisini ekleyebilelim
+            }
+            localStorage.setItem('products', JSON.stringify(products)); //ürünler listesini local storage'a products anahtarı ile string bir ifadeye çevirerek kaydediyoruz
+        },
+        //ürün bilgilerinin local storage'dan getirilmesi
+        getProducts: function(){
+            let products;
+            if(localStorage.getItem('products') == null)
+            {
+                //eğer local storage'da products isimli tanımlı bir alan yoksa
+                products = [];
+            }else{ //eğer bir bilgi varsa
+                products = JSON.parse(localStorage.getItem('products')); //products alanından bilgileri getir
+            }
+
+            return products; //okunan ürün listesini geri döndür (products isimli tanımlı alandaki)
+        }
+    }
+
 })();
 
 // Product Controller Modülü
@@ -14,8 +43,8 @@ const ProductController = (function () {
     }
 
     const data = {
-        //ürünler dizisi içerisinde ürün objeleri tutuyor (eklediğimiz bilgiler)
-        products: [],
+        //local storage'da products alanının içerisindeki ürün objelerini tutuyor (eklediğimiz bilgiler)
+        products: StorageControler.getProducts(),
         //seçilen ürünü tutar
         selectedProduct: null,
         totalPrice: 0 //fiyat toplamları başlangıçta sıfır
@@ -79,14 +108,13 @@ const ProductController = (function () {
 
             return product; //güncellenmiş ürünü geri döndür
         },
-        deleteProduct: function(product){ //ürünü parametre olarak alıyor, ürünü silecek
+        deleteProduct: function (product) { //ürünü parametre olarak alıyor, ürünü silecek
 
-            data.products.forEach(function(prd,index){
+            data.products.forEach(function (prd, index) {
 
                 //ürünler listesinde dolaşacağım her ürün ile parametre olarak gönderdiğim ürünün id'si eşleşiyor mu
-                if(prd.id === product.id)
-                {
-                    data.products.splice(index,1); //eşleştiği an gösterilen index değerinden itibaren bir elemanı silerim
+                if (prd.id === product.id) {
+                    data.products.splice(index, 1); //eşleştiği an gösterilen index değerinden itibaren bir elemanı silerim
                 }
 
             })
@@ -165,12 +193,11 @@ const UIController = (function () {
             document.querySelector(Selectors.productName).value = '';
             document.querySelector(Selectors.productPrice).value = '';
         },
-        clearWarnings: function(){
-            let items = document.querySelectorAll(Selectors.productListItems); 
+        clearWarnings: function () {
+            let items = document.querySelectorAll(Selectors.productListItems);
             //seçilen tr elemanlarını gez eğer bg-warning sınıfına sahipse
-            items.forEach(function(item){
-                if(item.classList.contains('bg-warning'))
-                {
+            items.forEach(function (item) {
+                if (item.classList.contains('bg-warning')) {
                     item.classList.remove('bg-warning'); //bg-warning sınıfını sil
                 }
             });
@@ -211,12 +238,11 @@ const UIController = (function () {
 
             return updatedItem;
         },
-        deleteProduct: function(){ //UI'dan ürünün silinmesi
+        deleteProduct: function () { //UI'dan ürünün silinmesi
             let items = document.querySelectorAll(Selectors.productListItems);
             //bütün elemanları aldım bu liste üzerinde elemanları tek tek dolaşalım
-            items.forEach(function(item){
-                if(item.classList.contains('bg-warning'))
-                {
+            items.forEach(function (item) {
+                if (item.classList.contains('bg-warning')) {
                     item.remove(); //eğer elemanın sınıfı içerisinde bg-warning varsa (yani seçilen elemansa) silme işleminde bu ürün silinsin
                 }
             });
@@ -248,7 +274,7 @@ const UIController = (function () {
 })();
 
 // App Modülü
-const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
+const App = (function (ProductCtrl, UICtrl, StorageCtrl) //beklenen parametreler
     {
 
         const UISelectors = UICtrl.getSelectors(); //Selectorları app içerisinden ulaşılabilir oldu
@@ -265,10 +291,10 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
             document.querySelector(UISelectors.updateButton).addEventListener('click', editProductSubmit); //UISelector üzerinden updatButton'ı seçelim ve 'click eventi ekleyelim
 
             //ürün düzenleme iptal
-            document.querySelector(UISelectors.cancelButton).addEventListener('click',cancelUpdate);
+            document.querySelector(UISelectors.cancelButton).addEventListener('click', cancelUpdate);
 
             //ürün silme işlemi
-            document.querySelector(UISelectors.deleteButton).addEventListener('click',deleteProductSubmit);
+            document.querySelector(UISelectors.deleteButton).addEventListener('click', deleteProductSubmit);
         }
 
         //addButton'a tıklandığında çalışacak fonksiyon
@@ -282,6 +308,9 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
                 const newProduct = ProductCtrl.addProduct(productName, productPrice); //ProductController üzerinden addProduct methodu ile isim ve fiyat bilgisi parametreleri ile ekleme yapılır bize ürün bilgisi geri döner onu da alırız
                 //ürünün listeye eklenmesi (html içerisine)
                 UICtrl.addProduct(newProduct);
+
+                //ürün ekleme işlemi bittikten sonra local storage'a ekleyelim
+                StorageCtrl.storeProduct(newProduct);
 
                 //toplamı getir
                 const total = ProductCtrl.getTotal();
@@ -348,7 +377,7 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
 
         }
 
-        const cancelUpdate = function(e){
+        const cancelUpdate = function (e) {
 
             //kullanıcıyı ekleme durumuna geri gönder
             UIController.addingState();
@@ -357,8 +386,8 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
 
             e.preventDefault();
         }
-        
-        const deleteProductSubmit = function(e){
+
+        const deleteProductSubmit = function (e) {
             //seçilen ürünü getir
             const selectedProduct = ProductCtrl.getCurrentProduct();
 
@@ -377,7 +406,7 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
             //ekleme durumuna geri döndür
             UICtrl.addingState();
 
-            if(total == 0) //toplam miktar sıfırsa
+            if (total == 0) //toplam miktar sıfırsa
             {
                 UICtrl.hideCard(); //ürün tablosunun olduğu card nesnesini gizle
             }
@@ -404,6 +433,6 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
                 loadEventListeners();
             }
         }
-    })(ProductController, UIController); //parametre değerleri
+    })(ProductController, UIController, StorageControler); //parametre değerleri, gerçek objeyi göndereceğiz
 
 App.init();
