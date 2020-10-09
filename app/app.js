@@ -152,6 +152,16 @@ const UIController = (function () {
             document.querySelector(Selectors.productName).value = '';
             document.querySelector(Selectors.productPrice).value = '';
         },
+        clearWarnings: function(){
+            let items = document.querySelectorAll(Selectors.productListItems); 
+            //seçilen tr elemanlarını gez eğer bg-warning sınıfına sahipse
+            items.forEach(function(item){
+                if(item.classList.contains('bg-warning'))
+                {
+                    item.classList.remove('bg-warning'); //bg-warning sınıfını sil
+                }
+            });
+        },
         //ürünler kartı içerisinde ürün yoksa gizleyeceğiz
         hideCard: function () {
             document.querySelector(Selectors.productCard).style.display = 'none';
@@ -189,11 +199,8 @@ const UIController = (function () {
             return updatedItem;
         },
         addingState: function (item) {
-            //eğer bize gelecek item null değil ise yani bir parametre, bir nesne varsa
-            if(item)
-            {
-                item.classList.remove('bg-warning'); //arkaplan rengini sil
-            }
+            //eğer bize gelecek item null değil ise yani bir parametre, bir nesne varsa arkplan rengini sil
+            UIController.clearWarnings();
             //ekleme durumu
             UIController.clearInputs();
             document.querySelector(Selectors.addButton).style.display = 'inline'; //ekleme butonu görünür halde
@@ -203,12 +210,6 @@ const UIController = (function () {
             document.querySelector(Selectors.cancelButton).style.display = 'none';
         },
         editState: function (tr) {
-            const parent = tr.parentNode;
-            for (let i = 0; i < parent.children.length; i++) {
-                //seçilmesi gereken tr dışındaki tüm satırların bg-warning class'ını siliyorum
-                parent.children[i].classList.remove('bg-warning');
-            }
-
             //seçmiş olduğum elemanı içeren tr elemanı
             tr.classList.add('bg-warning');
             //düzenleme durumu
@@ -240,6 +241,8 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
             //ürün düzenlemeyi kaydet
             document.querySelector(UISelectors.updateButton).addEventListener('click', editProductSubmit); //UISelector üzerinden updatButton'ı seçelim ve 'click eventi ekleyelim
 
+            //ürün düzenleme iptal
+            document.querySelector(UISelectors.cancelButton).addEventListener('click',cancelUpdate)
         }
 
         //addButton'a tıklandığında çalışacak fonksiyon
@@ -310,12 +313,21 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
                 //toplamı göster
                 UICtrl.showTotal(total);
 
-                UICtrl.addingState(item);
+                UICtrl.addingState();
             }
             e.preventDefault();
 
         }
 
+        const cancelUpdate = function(e){
+
+            //kullanıcıyı ekleme durumuna geri gönder
+            UIController.addingState();
+            //seçili arkaplanı siler
+            UIController.clearWarnings();
+
+            e.preventDefault();
+        }
 
         return {
             init: function () {
