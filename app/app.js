@@ -79,6 +79,19 @@ const ProductController = (function () {
 
             return product; //güncellenmiş ürünü geri döndür
         },
+        deleteProduct: function(product){ //ürünü parametre olarak alıyor, ürünü silecek
+
+            data.products.forEach(function(prd,index){
+
+                //ürünler listesinde dolaşacağım her ürün ile parametre olarak gönderdiğim ürünün id'si eşleşiyor mu
+                if(prd.id === product.id)
+                {
+                    data.products.splice(index,1); //eşleştiği an gösterilen index değerinden itibaren bir elemanı silerim
+                }
+
+            })
+
+        },
         getTotal: function () {
             let total = 0; //toplam başlangıçta sıfır
             data.products.forEach(item => {
@@ -198,6 +211,16 @@ const UIController = (function () {
 
             return updatedItem;
         },
+        deleteProduct: function(){ //UI'dan ürünün silinmesi
+            let items = document.querySelectorAll(Selectors.productListItems);
+            //bütün elemanları aldım bu liste üzerinde elemanları tek tek dolaşalım
+            items.forEach(function(item){
+                if(item.classList.contains('bg-warning'))
+                {
+                    item.remove(); //eğer elemanın sınıfı içerisinde bg-warning varsa (yani seçilen elemansa) silme işleminde bu ürün silinsin
+                }
+            });
+        },
         addingState: function (item) {
             //eğer bize gelecek item null değil ise yani bir parametre, bir nesne varsa arkplan rengini sil
             UIController.clearWarnings();
@@ -242,7 +265,10 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
             document.querySelector(UISelectors.updateButton).addEventListener('click', editProductSubmit); //UISelector üzerinden updatButton'ı seçelim ve 'click eventi ekleyelim
 
             //ürün düzenleme iptal
-            document.querySelector(UISelectors.cancelButton).addEventListener('click',cancelUpdate)
+            document.querySelector(UISelectors.cancelButton).addEventListener('click',cancelUpdate);
+
+            //ürün silme işlemi
+            document.querySelector(UISelectors.deleteButton).addEventListener('click',deleteProductSubmit);
         }
 
         //addButton'a tıklandığında çalışacak fonksiyon
@@ -282,6 +308,9 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
 
                 //seçilen ürünü düzenle
                 ProductCtrl.setCurrentProduct(product);
+
+                //Eski seçilen ürünlerin arkaplanlarını da silelim
+                UIController.clearWarnings();
 
                 //UI'da Ürün Ekleme Özelliği
                 UICtrl.addProductToForm();
@@ -325,6 +354,33 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
             UIController.addingState();
             //seçili arkaplanı siler
             UIController.clearWarnings();
+
+            e.preventDefault();
+        }
+        
+        const deleteProductSubmit = function(e){
+            //seçilen ürünü getir
+            const selectedProduct = ProductCtrl.getCurrentProduct();
+
+            //ürünü sil (ürünler listesinden veri olarak)
+            ProductCtrl.deleteProduct(selectedProduct);
+
+            //ürünü kullanıcı arayüzünden sil
+            UICtrl.deleteProduct();
+
+            //toplamı getir
+            const total = ProductCtrl.getTotal();
+
+            //toplamı göster
+            UICtrl.showTotal(total);
+
+            //ekleme durumuna geri döndür
+            UICtrl.addingState();
+
+            if(total == 0) //toplam miktar sıfırsa
+            {
+                UICtrl.hideCard(); //ürün tablosunun olduğu card nesnesini gizle
+            }
 
             e.preventDefault();
         }
