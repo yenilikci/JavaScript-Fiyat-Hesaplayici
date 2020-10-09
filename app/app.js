@@ -26,8 +26,8 @@ const ProductController = (function () {
         getProducts: function () {
             return data.products; //data nesnesi içerisindeki ürünleri geri döndürür
         },
-        getData: function () {
-            return data; //data nesnesini geri döndürür
+        "getData": function () {
+            return data; //data nesnesini geri döndürür yani tüm ürünleri,seçilen ürünü,toplam tutarı
         },
         getProductById: function (id) { //gelen id bilgisine göre ürün getirecek
             let product = null;
@@ -63,6 +63,22 @@ const ProductController = (function () {
             data.products.push(newProduct); //data objesi içerisindeki ürünler dizisine yeni bir ürün nesnesi daha ekledim
             return newProduct; //eklenen ürünü geri döndürür
         },
+        updateProduct: function (name, price) {
+            let product = null;
+
+            data.products.forEach(function (prd) {
+                //ürünler listesindeki id , seçilen ürünün id'si ile eşleşirse
+                if (prd.id == data.selectedProduct.id) {
+
+                    //ürünün isim ve fiyat değerlerini parametreden gelen değerler olarak ata
+                    prd.name = name;
+                    prd.price = parseFloat(price);
+                    product = prd; //yeni elemanı ata
+                }
+            });
+
+            return product; //güncellenmiş ürünü geri döndür
+        },
         getTotal: function () {
             let total = 0; //toplam başlangıçta sıfır
             data.products.forEach(item => {
@@ -80,6 +96,7 @@ const UIController = (function () {
 
     const Selectors = {
         productList: "#item-list", //item-list id'li tbody etiketi seçilsin diye seçici nesnesinin bir propertysi
+        productListItems: "#item-list tr", //item-list altındaki bütün tr etiketleri
         addButton: '#addBtn',
         updateButton: '#updateBtn',
         cancelButton: '#cancelBtn',
@@ -155,7 +172,28 @@ const UIController = (function () {
             document.querySelector(Selectors.productPrice).value = selectedProduct.price; //ürün fiyatının geldiği inputa seçili ürün fiyatını yerleştirdik
 
         },
-        addingState: function(){
+        updateProduct: function (prd) { //UI'da düzenlenen ürünün gösterilmesi
+            let updatedItem = null;
+
+            let items = document.querySelectorAll(Selectors.productListItems); //tr etiketlerini seçtik
+            items.forEach(function (item) {
+                if (item.classList.contains('bg-warning')) {
+                    //isim td'si
+                    item.children[1].textContent = prd.name;
+                    //fiyat td'si   
+                    item.children[2].textContent = prd.price + ' $';
+                    updatedItem = item;
+                }
+            });
+
+            return updatedItem;
+        },
+        addingState: function (item) {
+            //eğer bize gelecek item null değil ise yani bir parametre, bir nesne varsa
+            if(item)
+            {
+                item.classList.remove('bg-warning'); //arkaplan rengini sil
+            }
             //ekleme durumu
             UIController.clearInputs();
             document.querySelector(Selectors.addButton).style.display = 'inline'; //ekleme butonu görünür halde
@@ -164,10 +202,9 @@ const UIController = (function () {
             document.querySelector(Selectors.deleteButton).style.display = 'none';
             document.querySelector(Selectors.cancelButton).style.display = 'none';
         },
-        editState: function(tr){ 
+        editState: function (tr) {
             const parent = tr.parentNode;
-            for(let i = 0; i < parent.children.length; i++)
-            {
+            for (let i = 0; i < parent.children.length; i++) {
                 //seçilmesi gereken tr dışındaki tüm satırların bg-warning class'ını siliyorum
                 parent.children[i].classList.remove('bg-warning');
             }
@@ -177,9 +214,9 @@ const UIController = (function () {
             //düzenleme durumu
             document.querySelector(Selectors.addButton).style.display = 'none'; //ekleme butonu gizlenmiş halde
             //diğer butonlar ise görünür halde
-            document.querySelector(Selectors.updateButton).style.display = 'inline'; 
-            document.querySelector(Selectors.deleteButton).style.display = 'inline'; 
-            document.querySelector(Selectors.cancelButton).style.display = 'inline'; 
+            document.querySelector(Selectors.updateButton).style.display = 'inline';
+            document.querySelector(Selectors.deleteButton).style.display = 'inline';
+            document.querySelector(Selectors.cancelButton).style.display = 'inline';
 
         }
     }
@@ -195,14 +232,19 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
         //event listenerları yükle
         const loadEventListeners = function () {
             //ürün ekleme eventi
-            document.querySelector(UISelectors.addButton).addEventListener('click', productAddSubmit); //UISelectors üzerinden addButton'ı çağıralım ve 'click' eventi ekleyelim
+            document.querySelector(UISelectors.addButton).addEventListener('click', productAddSubmit); //UISelectors üzerinden addButton'ı seçelim ve 'click' eventi ekleyelim
 
-            //ürünü düzenle
-            document.querySelector(UISelectors.productList).addEventListener('click', productEditSubmit); //UISelectors üzerinden productList'i çağıralım ve 'click' eventi ekleyelim
+            //ürünü düzenle tıklaması
+            document.querySelector(UISelectors.productList).addEventListener('click', productEditClick); //UISelectors üzerinden productList'i seçelim ve 'click' eventi ekleyelim
+
+            //ürün düzenlemeyi kaydet
+            document.querySelector(UISelectors.updateButton).addEventListener('click', editProductSubmit); //UISelector üzerinden updatButton'ı seçelim ve 'click eventi ekleyelim
+
         }
 
         //addButton'a tıklandığında çalışacak fonksiyon
         const productAddSubmit = function (e) {
+
             const productName = document.querySelector(UISelectors.productName).value; //ürün ismi bilgisi alındı
             const productPrice = document.querySelector(UISelectors.productPrice).value; //ürün fiyat bilgisi alındı
             //gelen bilgileri kontrol edelim
@@ -226,7 +268,8 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
         }
 
         //productList'e tıklandığında çalışacak fonksiyon
-        const productEditSubmit = function (e) {
+        const productEditClick = function (e) {
+
             //eğer gelen event parametresinin target özelliğinin classList'i içerisinde edit-product elemanı varsa
             if (e.target.classList.contains('edit-product')) {
                 //artık ikona tıklandığında işlemlerim gerçekleşecek
@@ -246,6 +289,31 @@ const App = (function (ProductCtrl, UICtrl) //beklenen parametreler
 
             }
             e.preventDefault(); //submit olayını durduralım
+        }
+
+        //updateButton'a tıklandığında çalışacak fonksiyon
+        const editProductSubmit = function (e) {
+
+            const productName = document.querySelector(UISelectors.productName).value; //ürün ismi bilgisi alındı
+            const productPrice = document.querySelector(UISelectors.productPrice).value; //ürün fiyat bilgisi alındı
+
+            if (productName !== '' && productPrice !== '') {
+                //Ürünü güncelle onun bilgisini de updatedProduct'da tut
+                const updatedProduct = ProductCtrl.updateProduct(productName, productPrice);
+
+                //UI'ı güncelle
+                let item = UICtrl.updateProduct(updatedProduct);
+
+                //toplamı getir
+                const total = ProductCtrl.getTotal();
+
+                //toplamı göster
+                UICtrl.showTotal(total);
+
+                UICtrl.addingState(item);
+            }
+            e.preventDefault();
+
         }
 
 
